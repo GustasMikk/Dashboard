@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Settings\NotificationSettings;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Section;
@@ -86,7 +87,7 @@ class ManageNotifications extends SettingsPage
                             'gemini'    => [
                                 'gemini-1.5-flash' => 'Gemini 1.5 Flash (Free)',
                                 'gemini-1.5-pro'   => 'Gemini 1.5 Pro',
-                                'gemini-3-flash-preview' => 'Gemini 3 Flash Preview',
+                                'gemini-2.0-flash' => 'Gemini 2.0 Flash',
                             ],
                             'openai'    => [
                                 'gpt-4o-mini' => 'GPT-4o Mini (Cheap)',
@@ -98,6 +99,22 @@ class ManageNotifications extends SettingsPage
                             ],
                             default => []
                         }),
+                ]),
+
+            Section::make('Group Time Controls')
+                ->icon('heroicon-o-clock')
+                ->schema([
+                    TextInput::make('time_for_new_group')
+                        ->label('Window of time within put similar errors in same group before creating new one (minutes)')
+                        ->numeric()
+                        ->minValue(1)
+                        ->step(1),
+
+                    TextInput::make('time_to_generate_ai_solution')
+                        ->label('How much time to wait since first error to generate AI solution (minutes)')
+                        ->numeric()
+                        ->minValue(1)
+                        ->step(1)
                 ]),
         ]);
     }

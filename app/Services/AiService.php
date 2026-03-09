@@ -26,8 +26,9 @@ class AiService
     public function analyzeGroup(IncidentGroup $group): array
     {
         Log::info('Analyzing incident group', ['group_id' => $group->id]);
+        $settings = app(NotificationSettings::class);
         $agent = new GroupIncidentAnalyzer($group);
-        $response = $agent->prompt($agent->buildPrompt());
+        $response = $agent->prompt($agent->buildPrompt()/*, model: $settings->ai_model*/);
         return $response->toArray();
     }
 }

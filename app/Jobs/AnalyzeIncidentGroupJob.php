@@ -27,14 +27,14 @@ class AnalyzeIncidentGroupJob implements ShouldQueue
     {
         Log::info('Group job started');
 
+        $this->group->refresh(); // get latest state with all incidents
+
         // If a newer job has been scheduled, skip this one
         if ($this->group->ai_scheduled_at > now()) {
             return; // a newer job will handle it
         }
 
         $settings = app(NotificationSettings::class);
-
-        $this->group->refresh(); // get latest state with all incidents
 
         try {
             $ai = app(AiService::class);

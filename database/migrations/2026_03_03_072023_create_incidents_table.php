@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignId('incident_group_id')
                 ->nullable()
                 ->constrained('incident_groups')
-                ->nullOnDelete();
+                ->cascadeOnDelete();
             $table->json('raw_payload')->nullable();
             $table->timestamp('first_occurrence_at');
             $table->unsignedInteger('occurrences_count')->defaul(1);

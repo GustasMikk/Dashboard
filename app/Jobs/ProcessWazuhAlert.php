@@ -7,8 +7,9 @@ use App\Models\Incident;
 use App\Models\IncidentGroup;
 use App\Services\AiService;
 use App\Settings\NotificationSettings;
-use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -103,12 +104,17 @@ class ProcessWazuhAlert implements ShouldQueue
         if ($settings->ai_generation_enabled && in_array($incident->severity, $settings->ai_severities)) {
             try {
                 if ($incidentGroup) {
-                    // Cancel previous scheduled analysis and reschedule
-                    // Store job ID on the group to track it
-                    dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
-                        ->delay(now()->addMinute());
-                    
-                    $incidentGroup->update(['ai_scheduled_at' => now()->addMinute()]);
+                    DB::transaction(function () use ($incidentGroup) {
+                        $incidentGroup = IncidentGroup::where('id', $incidentGroup->id)->lockForUpdate()->first();
+                        
+                        if (!$incidentGroup->ai_scheduled_at || $incidentGroup->ai_scheduled_at < now()) {
+                            dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
+                                ->delay(now()->addMinute());
+                            $incidentGroup->update(['ai_scheduled_at' => now()->addMinute()]);
+                        } else {
+                            $incidentGroup->update(['ai_scheduled_at' => now()->addMinute()]);
+                        }
+                    });
                 } else {
                     // No group, analyze individual incident immediately
                     // $ai = app(AiService::class);

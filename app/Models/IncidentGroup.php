@@ -23,6 +23,7 @@ class IncidentGroup extends Model
         'ai_description',
         'ai_recommendations',
         'ai_root_cause',
+        'ai_scheduled_at',
     ];
 
     public function assignedUser(): BelongsTo

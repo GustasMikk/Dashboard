@@ -12,6 +12,8 @@ class NotificationSettings extends Settings
     public array $ai_severities;
     public string $ai_provider;
     public string $ai_model;
+    public string $time_for_new_group;
+    public string $time_to_generate_ai_solution;
 
     public static function group(): string
     {
