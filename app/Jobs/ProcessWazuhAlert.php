@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Mail\IncidentAnalyzedMail;
 use App\Models\Incident;
+use App\Models\IncidentGroup;
 use App\Services\AiService;
 use App\Settings\NotificationSettings;
 use Illuminate\Bus\Queueable;
@@ -25,10 +26,17 @@ class ProcessWazuhAlert implements ShouldQueue
 
     public function handle(): void
     {
-        $rule     = $this->payload['rule'] ?? [];
-        $agent    = $this->payload['agent'] ?? [];
-        $id       = $this->payload['id'] ?? uniqid('wazuh_');
-        $level    = $rule['level'] ?? 0;
+        Log::info('Job started');
+
+        $rule       = $this->payload['rule'] ?? [];
+        $agent      = $this->payload['agent'] ?? [];
+        $mitre_id   = data_get($this->payload, 'rule.mitre.id.0');
+        $mitre_base = $mitre_id ? explode('.', $mitre_id)[0] : null;
+        $id         = $this->payload['id'] ?? uniqid('wazuh_');
+        $level      = $rule['level'] ?? 0;
+        $host       = $agent['name'] ?? $agent['ip'] ?? 'unknown';
+        $mitre_tactic = data_get($this->payload, 'rule.mitre.tactic.0', 'Unknown');
+        $title = "{$mitre_tactic} on {$host} at " . now()->format('Y-m-d H:i');
 
         $severity = match(true) {
             $level >= 12 => 'critical',
@@ -37,44 +45,74 @@ class ProcessWazuhAlert implements ShouldQueue
             default      => 'low',
         };
 
-        $existing = Incident::where('wazuh_incident_id', $rule['id'] ?? $id)
-            ->where('status', '!=', 'closed')
+        $existing = Incident::where('rule', $rule['id'] ?? 'N/A')
+            ->where('host', $host)
+            ->where('last_occurrence_at', '>=', now()->subMinutes(15))
             ->first();
 
         if ($existing) {
             $existing->increment('occurrences_count');
             $existing->update(['last_occurrence_at' => now()]);
+
+            if ($existing->incident_group_id) {
+                IncidentGroup::where('id', $existing->incident_group_id)->increment('total_occurrences');
+                IncidentGroup::where('id', $existing->incident_group_id)->update(['last_occurrence_at' => now()]);
+            }
             return;
         }
-        
+
+        $incidentGroup = null;
+        if ($mitre_base) {
+            $incidentGroup = IncidentGroup::where('mitre_id', $mitre_base)
+                ->where('host', $host)
+                ->where('status', 'open')
+                ->first();
+
+            if (!$incidentGroup) {
+                $incidentGroup = IncidentGroup::create([
+                    'title' => $mitre_base ? $title : ($rule['description'] ?? 'Unknown Alert'),
+                    'mitre_id'           => $mitre_base,
+                    'highest_severity'   => $severity,
+                    'host'               => $host,
+                    'opened_at'          => now(),
+                    'last_occurrence_at' => now(),
+                    'total_occurrences'  => 0,
+                    'status'             => 'open',
+                ]);
+            }
+
+            $incidentGroup->increment('total_occurrences');
+        }
+
         $incident = Incident::create([
-            'wazuh_incident_id'  => $rule['id'] ?? $id,
-            'title'              => $rule['description'] ?? 'Unknown Alert',
-            'severity'           => $severity,
-            'rule'               => $rule['id'] ?? 'N/A',
-            'host'               => $agent['name'] ?? $agent['ip'] ?? 'unknown',
-            'status'             => 'open',
-            'opened_at'          => now(),
-            'last_occurrence_at' => now(),
-            'raw_payload'        => json_encode($this->payload),
-            'occurrences_count' => 1,
+            'wazuh_incident_id'   => $id,
+            'incident_group_id'   => $incidentGroup?->id,
+            'mitre_id'            => $mitre_base,
+            'title'               => $rule['description'] ?? 'Unknown Alert',
+            'severity'            => $severity,
+            'rule'                => $rule['id'] ?? 'N/A',
+            'host'                => $host,
+            'first_occurrence_at' => now(),
+            'last_occurrence_at'  => now(),
+            'raw_payload'         => json_encode($this->payload),
+            'occurrences_count'   => 1,
         ]);
 
-        $settings = app(NotificationSettings::class);
+        // $settings = app(NotificationSettings::class);
 
-        if ($settings->ai_generation_enabled && in_array($incident->severity, $settings->ai_severities)) {
-            try {
-                $ai = app(AiService::class);
-                $result = $ai->analyzeIncident($incident->toArray());
-                $incident->update($result);
-                $incident->refresh();
+        // if ($settings->ai_generation_enabled && in_array($incident->severity, $settings->ai_severities)) {
+        //     try {
+        //         $ai = app(AiService::class);
+        //         $result = $ai->analyzeIncident($incident->toArray());
+        //         $incident->update($result);
+        //         $incident->refresh();
 
-                if ($settings->email_enabled && in_array($incident->severity, $settings->email_severities)) {
-                    Mail::to(config('mail.admin_address'))->queue(new IncidentAnalyzedMail($incident));
-                }
-            } catch (\Exception $e) {
-                Log::error('AI analysis failed', ['incident_id' => $incident->id, 'error' => $e->getMessage()]);
-            }
-        }
+        //         if ($settings->email_enabled && in_array($incident->severity, $settings->email_severities)) {
+        //             Mail::to(config('mail.admin_address'))->queue(new IncidentAnalyzedMail($incident));
+        //         }
+        //     } catch (\Exception $e) {
+        //         Log::error('AI analysis failed', ['incident_id' => $incident->id, 'error' => $e->getMessage()]);
+        //     }
+        // }
     }
 }

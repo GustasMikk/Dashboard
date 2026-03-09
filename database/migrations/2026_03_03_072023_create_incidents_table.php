@@ -14,29 +14,19 @@ return new class extends Migration
         Schema::create('incidents', function (Blueprint $table) {
             $table->id();
             $table->string('wazuh_incident_id');
+            $table->string('mitre_id')
+                ->nullable();
             $table->string('title');
             $table->string('severity')->index();
             $table->string('rule');
             $table->string('host');
-            $table->enum('status', ['open', 'assigned', 'resolved', 'closed'])
-                ->default('open')
-                ->index();
-            $table->foreignId('assigned_user_id')
-                ->nullable()
-                ->constrained('users')
-                ->nullOnDelete();
-            $table->foreignId('group_id')
+            $table->foreignId('incident_group_id')
                 ->nullable()
                 ->constrained('incident_groups')
                 ->nullOnDelete();
-            $table->timestamp('opened_at')->nullable();
-            $table->timestamp('resolved_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
-            $table->text('ai_description')->nullable();
-            $table->text('ai_recommendations')->nullable();
-            $table->text('ai_root_cause')->nullable();
             $table->json('raw_payload')->nullable();
-            $table->unsignedInteger('occurrences_count')->default(1);
+            $table->timestamp('first_occurrence_at');
+            $table->unsignedInteger('occurrences_count')->defaul(1);
             $table->timestamp('last_occurrence_at');
             $table->timestamps();
         });

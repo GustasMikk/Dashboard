@@ -1,23 +1,26 @@
 <?php
 
-namespace App\Filament\Resources\Incidents\Tables;
+namespace App\Filament\Resources\IncidentGroups\RelationManagers;
 
-use Filament\Actions\BulkAction;
-use Filament\Actions\BulkActionGroup;
+use App\Filament\Resources\Incidents\IncidentResource;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
-class IncidentsTable
+class IncidentsRelationManager extends RelationManager
 {
-    public static function configure(Table $table): Table
+    protected static string $relationship = 'incidents';
+    protected static ?string $navigationLabel = 'Incidents';
+
+    protected static ?string $relatedResource = IncidentResource::class;
+
+    protected static bool $isLazy = false;
+
+    public function table(Table $table): Table
     {
         return $table
             ->columns([
@@ -41,12 +44,6 @@ class IncidentsTable
 
                 TextColumn::make('host')
                     ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('incidentGroup.title')
-                    ->label('Incident Group')
-                    ->searchable()
-                    ->default('None')
                     ->sortable(),
 
                 TextColumn::make('first_occurrence_at')
@@ -87,41 +84,6 @@ class IncidentsTable
                             ->pluck('host', 'host')
                             ->toArray()
                     ),
-
-                SelectFilter::make('grouped')
-                    ->label('Grouping')
-                    ->options([
-                        'grouped'   => 'Grouped',
-                        'ungrouped' => 'Not Grouped',
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        if ($data['value'] === 'grouped') {
-                            $query->whereNotNull('incident_group_id');
-                        } elseif ($data['value'] === 'ungrouped') {
-                            $query->whereNull('incident_group_id');
-                        }
-                }),
-
-                SelectFilter::make('incident_group_id')
-                    ->label('Incident Group')
-                    ->relationship('incidentGroup', 'title'),
-
-                Filter::make('first_occurrence_at')
-                    ->form([
-                        DatePicker::make('from'),
-                        DatePicker::make('until'),
-                    ])
-                    ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn ($query) => $query->whereDate('opened_at', '>=', $data['from'])
-                            )
-                            ->when(
-                                $data['until'],
-                                fn ($query) => $query->whereDate('opened_at', '<=', $data['until'])
-                            );
-                    }),
             ])
             ->recordActions([
                 ViewAction::make(),
@@ -129,7 +91,6 @@ class IncidentsTable
             ])
             ->toolbarActions([
                 DeleteBulkAction::make(),
-            ])
-            ->defaultSort('first_occurrence_at', 'desc');
+            ]);
     }
 }

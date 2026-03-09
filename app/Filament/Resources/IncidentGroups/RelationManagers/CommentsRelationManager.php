@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Incidents\RelationManagers;
+namespace App\Filament\Resources\IncidentGroups\RelationManagers;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
@@ -15,9 +15,12 @@ use Filament\Support\Enums\FontWeight;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
-class CommentRelationManager extends RelationManager
+class CommentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'comments';
+    protected static ?string $navigationLabel = 'Comments';
+
+    protected static bool $isLazy = false;
 
     public function isReadOnly(): bool
     {

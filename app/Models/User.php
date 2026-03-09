@@ -48,9 +48,9 @@ class User extends Authenticatable
         ];
     }
 
-    public function assignedIncidents(): HasMany
+    public function assignedIncidentGroups(): HasMany
     {
-        return $this->hasMany(Incident::class, 'assigned_user_id');
+        return $this->hasMany(IncidentGroup::class, 'assigned_user_id');
     }
 
     public function comments(): HasMany

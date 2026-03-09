@@ -6,7 +6,6 @@ use App\Filament\Resources\Incidents\Pages\CreateIncident;
 use App\Filament\Resources\Incidents\Pages\EditIncident;
 use App\Filament\Resources\Incidents\Pages\ListIncidents;
 use App\Filament\Resources\Incidents\Pages\ViewIncident;
-use App\Filament\Resources\Incidents\RelationManagers\CommentRelationManager;
 use App\Filament\Resources\Incidents\Schemas\IncidentForm;
 use App\Filament\Resources\Incidents\Schemas\IncidentInfolist;
 use App\Filament\Resources\Incidents\Tables\IncidentsTable;
@@ -25,6 +24,11 @@ class IncidentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'Incident';
 
+    public static function getNavigationIcon(): string
+    {
+        return 'heroicon-o-exclamation-triangle';
+    }
+
     public static function getNavigationGroup(): string
     {
         return 'Wazuh Incidents';
@@ -32,7 +36,7 @@ class IncidentResource extends Resource
 
     public static function getNavigationSort(): ?int
     {
-        return 1;
+        return 2;
     }
 
     public static function form(Schema $schema): Schema
@@ -53,7 +57,7 @@ class IncidentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            CommentRelationManager::class,
+            //
         ];
     }
 

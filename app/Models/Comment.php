@@ -8,14 +8,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Comment extends Model
 {
     protected $fillable = [
-        'incident_id',
+        'incident_group_id',
         'user_id',
         'comment_text',
     ];
 
-    public function incident(): BelongsTo
+    public function incidentGroup(): BelongsTo
     {
-        return $this->belongsTo(Incident::class);
+        return $this->belongsTo(IncidentGroup::class, 'incident_group_id');
     }
 
     public function user(): BelongsTo
