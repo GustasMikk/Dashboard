@@ -15,6 +15,8 @@ return new class extends Migration
             ['group' => 'notifications', 'name' => 'email_severities', 'payload' => json_encode(['critical', 'high']), 'locked' => false],
             ['group' => 'notifications', 'name' => 'ai_generation_enabled', 'payload' => json_encode(true), 'locked' => false],
             ['group' => 'notifications', 'name' => 'ai_severities', 'payload' => json_encode(['critical', 'high']), 'locked' => false],
+            ['group' => 'notifications', 'name' => 'ai_provider', 'payload' => json_encode('gemini'), 'locked' => false],
+            ['group' => 'notifications', 'name' => 'ai_model', 'payload' => json_encode('gemini-3-flash'), 'locked' => false],
         ]);
     }
 

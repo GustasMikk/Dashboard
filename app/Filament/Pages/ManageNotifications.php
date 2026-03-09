@@ -4,6 +4,7 @@ namespace App\Filament\Pages;
 
 use App\Settings\NotificationSettings;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Section;
@@ -66,6 +67,37 @@ class ManageNotifications extends SettingsPage
                             'low'      => 'Low',
                         ])
                         ->visible(fn ($get) => $get('ai_generation_enabled')),
+                ]),
+
+            Section::make('AI Provider')
+                ->icon('heroicon-o-cpu-chip')
+                ->schema([
+                    Select::make('ai_provider')
+                        ->label('Provider')
+                        ->live()
+                        ->options([
+                            'gemini'    => 'Google Gemini',
+                            'openai'    => 'OpenAI',
+                            'anthropic' => 'Anthropic (Claude)',
+                        ]),
+                    Select::make('ai_model')
+                        ->label('Model')
+                        ->options(fn ($get) => match($get('ai_provider')) {
+                            'gemini'    => [
+                                'gemini-1.5-flash' => 'Gemini 1.5 Flash (Free)',
+                                'gemini-1.5-pro'   => 'Gemini 1.5 Pro',
+                                'gemini-3-flash-preview' => 'Gemini 3 Flash Preview',
+                            ],
+                            'openai'    => [
+                                'gpt-4o-mini' => 'GPT-4o Mini (Cheap)',
+                                'gpt-4o'      => 'GPT-4o',
+                            ],
+                            'anthropic' => [
+                                'claude-haiku-4-5'  => 'Claude Haiku (Fast)',
+                                'claude-sonnet-4-5' => 'Claude Sonnet',
+                            ],
+                            default => []
+                        }),
                 ]),
         ]);
     }

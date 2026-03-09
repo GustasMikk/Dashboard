@@ -10,6 +10,8 @@ class NotificationSettings extends Settings
     public array $email_severities;
     public bool $ai_generation_enabled;
     public array $ai_severities;
+    public string $ai_provider;
+    public string $ai_model;
 
     public static function group(): string
     {

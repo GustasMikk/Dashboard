@@ -7,8 +7,8 @@ use App\Models\Incident;
 use App\Models\IncidentGroup;
 use App\Services\AiService;
 use App\Settings\NotificationSettings;
-use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Bus\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -98,21 +98,31 @@ class ProcessWazuhAlert implements ShouldQueue
             'occurrences_count'   => 1,
         ]);
 
-        // $settings = app(NotificationSettings::class);
+        $settings = app(NotificationSettings::class);
 
-        // if ($settings->ai_generation_enabled && in_array($incident->severity, $settings->ai_severities)) {
-        //     try {
-        //         $ai = app(AiService::class);
-        //         $result = $ai->analyzeIncident($incident->toArray());
-        //         $incident->update($result);
-        //         $incident->refresh();
+        if ($settings->ai_generation_enabled && in_array($incident->severity, $settings->ai_severities)) {
+            try {
+                if ($incidentGroup) {
+                    // Cancel previous scheduled analysis and reschedule
+                    // Store job ID on the group to track it
+                    dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
+                        ->delay(now()->addMinute());
+                    
+                    $incidentGroup->update(['ai_scheduled_at' => now()->addMinute()]);
+                } else {
+                    // No group, analyze individual incident immediately
+                    // $ai = app(AiService::class);
+                    // $result = $ai->analyzeIncident($incident);
+                    // $incident->update($result);
+                    // $incident->refresh();
 
-        //         if ($settings->email_enabled && in_array($incident->severity, $settings->email_severities)) {
-        //             Mail::to(config('mail.admin_address'))->queue(new IncidentAnalyzedMail($incident));
-        //         }
-        //     } catch (\Exception $e) {
-        //         Log::error('AI analysis failed', ['incident_id' => $incident->id, 'error' => $e->getMessage()]);
-        //     }
-        // }
+                    // if ($settings->email_enabled && in_array($incident->severity, $settings->email_severities)) {
+                    //     Mail::to(config('mail.admin_address'))->queue(new IncidentAnalyzedMail($incident));
+                    // }
+                }
+            } catch (\Exception $e) {
+                Log::error('AI analysis failed', ['incident_id' => $incident->id, 'error' => $e->getMessage()]);
+            }
+        }
     }
 }
