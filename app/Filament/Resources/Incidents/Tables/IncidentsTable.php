@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Incidents\Tables;
 
-use Filament\Actions\BulkAction;
-use Filament\Actions\BulkActionGroup;
+use App\Models\Incident;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -73,25 +73,23 @@ class IncidentsTable
                     ]),
 
                 SelectFilter::make('rule')
-                    ->options(fn () =>
-                        \App\Models\Incident::query()
-                            ->distinct()
-                            ->pluck('rule', 'rule')
-                            ->toArray()
+                    ->options(fn () => Incident::query()
+                        ->distinct()
+                        ->pluck('rule', 'rule')
+                        ->toArray()
                     ),
 
                 SelectFilter::make('host')
-                    ->options(fn () =>
-                        \App\Models\Incident::query()
-                            ->distinct()
-                            ->pluck('host', 'host')
-                            ->toArray()
+                    ->options(fn () => Incident::query()
+                        ->distinct()
+                        ->pluck('host', 'host')
+                        ->toArray()
                     ),
 
                 SelectFilter::make('grouped')
                     ->label('Grouping')
                     ->options([
-                        'grouped'   => 'Grouped',
+                        'grouped' => 'Grouped',
                         'ungrouped' => 'Not Grouped',
                     ])
                     ->query(function (Builder $query, array $data) {
@@ -100,7 +98,7 @@ class IncidentsTable
                         } elseif ($data['value'] === 'ungrouped') {
                             $query->whereNull('incident_group_id');
                         }
-                }),
+                    }),
 
                 SelectFilter::make('incident_group_id')
                     ->label('Incident Group')
@@ -108,9 +106,9 @@ class IncidentsTable
 
                 Filter::make('first_occurrence_at')
                     ->form([
-                        DatePicker::make('from'),
-                        DatePicker::make('until'),
-                    ])
+                            DatePicker::make('from'),
+                            DatePicker::make('until'),
+                        ])
                     ->query(function (Builder $query, array $data) {
                         return $query
                             ->when(
@@ -129,6 +127,26 @@ class IncidentsTable
             ])
             ->toolbarActions([
                 DeleteBulkAction::make(),
+
+                ActionGroup::make([
+                    Action::make('clearLow')
+                        ->label('Clear Low Severity')
+                        ->icon('heroicon-o-trash')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalDescription('This will permanently delete all low severity incidents.')
+                        ->action(fn () => Incident::where('severity', 'low')->delete()),
+
+                    Action::make('clearMedium')
+                        ->label('Clear Medium Severity')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalDescription('This will permanently delete all medium severity incidents.')
+                        ->action(fn () => Incident::where('severity', 'medium')->delete()),
+                ])
+                    ->label('Cleanup')
+                    ->icon('heroicon-o-trash'),
             ])
             ->defaultSort('first_occurrence_at', 'desc');
     }

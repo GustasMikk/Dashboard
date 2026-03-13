@@ -8,7 +8,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontWeight;
@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 class CommentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'comments';
+
     protected static ?string $navigationLabel = 'Comments';
 
     protected static bool $isLazy = false;
@@ -31,8 +32,9 @@ class CommentsRelationManager extends RelationManager
     {
         return $schema
             ->components([
-                TextInput::make('comment_text')
+                Textarea::make('comment_text')
                     ->required()
+                    ->columnSpanFull()
                     ->label('Add comment'),
 
                 Hidden::make('user_id')

@@ -2,18 +2,20 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
 
 class WazuhService
 {
     private string $baseUrl;
+
     private string $username;
+
     private string $password;
 
     public function __construct()
     {
-        $this->baseUrl  = config('services.wazuh.url');
+        $this->baseUrl = config('services.wazuh.url');
         $this->username = config('services.wazuh.username');
         $this->password = config('services.wazuh.password');
     }

@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('incident_groups', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('mitre_id');
+            $table->string('mitre_id')
+                ->nullable();
             $table->integer('total_occurrences');
             $table->timestamp('last_occurrence_at');
             $table->string('highest_severity');

@@ -13,11 +13,11 @@ use App\Filament\Resources\IncidentGroups\Schemas\IncidentGroupInfolist;
 use App\Filament\Resources\IncidentGroups\Tables\IncidentGroupsTable;
 use App\Models\IncidentGroup;
 use BackedEnum;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
-use Filament\Resources\RelationManagers\RelationGroup;
 
 class IncidentGroupResource extends Resource
 {
@@ -60,8 +60,8 @@ class IncidentGroupResource extends Resource
             RelationGroup::make('', [
                 IncidentsRelationManager::class,
                 CommentsRelationManager::class,
-        ]),
-    ];
+            ]),
+        ];
     }
 
     public static function getPages(): array

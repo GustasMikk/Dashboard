@@ -2,9 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Enums\AiProvider;
 use App\Settings\NotificationSettings;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
@@ -37,7 +39,7 @@ class ManageNotifications extends SettingsPage
         return $schema->components([
             Section::make('Email Notifications')
                 ->icon('heroicon-o-envelope')
-                ->description('If AI generation is off emails will be off too.')
+                ->description('Check which severities should be notifed. If AI generation is off emails will be off too.')
                 ->schema([
                     Toggle::make('email_enabled')
                         ->label('Enable email notifications')
@@ -46,15 +48,16 @@ class ManageNotifications extends SettingsPage
                         ->label('Send email for these severities')
                         ->options([
                             'critical' => 'Critical',
-                            'high'     => 'High',
-                            'medium'   => 'Medium',
-                            'low'      => 'Low',
+                            'high' => 'High',
+                            'medium' => 'Medium',
+                            'low' => 'Low',
                         ])
                         ->visible(fn ($get) => $get('email_enabled')),
                 ]),
 
             Section::make('AI Analysis')
                 ->icon('heroicon-o-cpu-chip')
+                ->description('Select which severities AI should look into.')
                 ->schema([
                     Toggle::make('ai_generation_enabled')
                         ->label('Enable AI generation')
@@ -63,9 +66,9 @@ class ManageNotifications extends SettingsPage
                         ->label('Run AI analysis for these severities')
                         ->options([
                             'critical' => 'Critical',
-                            'high'     => 'High',
-                            'medium'   => 'Medium',
-                            'low'      => 'Low',
+                            'high' => 'High',
+                            'medium' => 'Medium',
+                            'low' => 'Low',
                         ])
                         ->visible(fn ($get) => $get('ai_generation_enabled')),
                 ]),
@@ -76,29 +79,11 @@ class ManageNotifications extends SettingsPage
                     Select::make('ai_provider')
                         ->label('Provider')
                         ->live()
-                        ->options([
-                            'gemini'    => 'Google Gemini',
-                            'openai'    => 'OpenAI',
-                            'anthropic' => 'Anthropic (Claude)',
-                        ]),
+                        ->options(AiProvider::options()),
+
                     Select::make('ai_model')
                         ->label('Model')
-                        ->options(fn ($get) => match($get('ai_provider')) {
-                            'gemini'    => [
-                                'gemini-1.5-flash' => 'Gemini 1.5 Flash (Free)',
-                                'gemini-1.5-pro'   => 'Gemini 1.5 Pro',
-                                'gemini-2.0-flash' => 'Gemini 2.0 Flash',
-                            ],
-                            'openai'    => [
-                                'gpt-4o-mini' => 'GPT-4o Mini (Cheap)',
-                                'gpt-4o'      => 'GPT-4o',
-                            ],
-                            'anthropic' => [
-                                'claude-haiku-4-5'  => 'Claude Haiku (Fast)',
-                                'claude-sonnet-4-5' => 'Claude Sonnet',
-                            ],
-                            default => []
-                        }),
+                        ->options(fn ($get) => AiProvider::tryFrom($get('ai_provider'))?->models() ?? []),
                 ]),
 
             Section::make('Group Time Controls')
@@ -114,7 +99,17 @@ class ManageNotifications extends SettingsPage
                         ->label('How much time to wait since first error to generate AI solution (minutes)')
                         ->numeric()
                         ->minValue(1)
-                        ->step(1)
+                        ->step(1),
+                ]),
+
+            Section::make('AI Instructions')
+                ->icon('heroicon-o-document-text')
+                ->columnSpanFull()
+                ->schema([
+                    Textarea::make('ai_instructions')
+                        ->label('System Instructions')
+                        ->rows(6)
+                        ->columnSpanFull(),
                 ]),
         ]);
     }

@@ -36,14 +36,14 @@ return [
     ],
 
     'wazuh' => [
-        'url'      => env('WAZUH_BASE_URL'),
+        'url' => env('WAZUH_BASE_URL'),
         'username' => env('WAZUH_USERNAME'),
         'password' => env('WAZUH_PASSWORD'),
     ],
 
     'ai' => [
-        'key'      => env('AI_API_KEY'),
-        'model'    => env('AI_MODEL', 'gemini-1.5-flash'),
+        'key' => env('AI_API_KEY'),
+        'model' => env('AI_MODEL', 'gemini-1.5-flash'),
         'provider' => env('AI_PROVIDER', 'gemini'),
     ],
 

@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 class IncidentsRelationManager extends RelationManager
 {
     protected static string $relationship = 'incidents';
+
     protected static ?string $navigationLabel = 'Incidents';
 
     protected static ?string $relatedResource = IncidentResource::class;
@@ -70,19 +71,17 @@ class IncidentsRelationManager extends RelationManager
                     ]),
 
                 SelectFilter::make('rule')
-                    ->options(fn () =>
-                        \App\Models\Incident::query()
-                            ->distinct()
-                            ->pluck('rule', 'rule')
-                            ->toArray()
+                    ->options(fn () => \App\Models\Incident::query()
+                        ->distinct()
+                        ->pluck('rule', 'rule')
+                        ->toArray()
                     ),
 
                 SelectFilter::make('host')
-                    ->options(fn () =>
-                        \App\Models\Incident::query()
-                            ->distinct()
-                            ->pluck('host', 'host')
-                            ->toArray()
+                    ->options(fn () => \App\Models\Incident::query()
+                        ->distinct()
+                        ->pluck('host', 'host')
+                        ->toArray()
                     ),
             ])
             ->recordActions([

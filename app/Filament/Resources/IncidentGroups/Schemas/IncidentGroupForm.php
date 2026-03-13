@@ -40,7 +40,7 @@ class IncidentGroupForm
                 Textarea::make('ai_recommendations')
                     ->columnSpanFull(),
                 Textarea::make('ai_root_cause')
-                    ->columnSpanFull(),                
+                    ->columnSpanFull(),
             ]);
     }
 }

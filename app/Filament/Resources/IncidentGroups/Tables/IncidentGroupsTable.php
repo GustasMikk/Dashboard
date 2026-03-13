@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources\IncidentGroups\Tables;
 
+use App\Models\IncidentGroup;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -43,10 +46,14 @@ class IncidentGroupsTable
                         'gray' => 'closed',
                     ]),
 
+                TextColumn::make('host')
+                    ->label('Host')
+                    ->sortable(),
+
                 TextColumn::make('assignedUser.name')
                     ->label('Assigned User')
                     ->sortable(),
-                
+
                 TextColumn::make('total_occurrences')
                     ->label('Total Occurrences')
                     ->sortable(),
@@ -54,7 +61,7 @@ class IncidentGroupsTable
                 TextColumn::make('opened_at')
                     ->label('Opened')
                     ->dateTime()
-                    ->sortable(),  
+                    ->sortable(),
 
                 TextColumn::make('last_occurrence_at')
                     ->label('Last Occurrence')
@@ -71,10 +78,17 @@ class IncidentGroupsTable
                         'critical' => 'Critical',
                     ]),
 
+                SelectFilter::make('host')
+                    ->options(fn () => IncidentGroup::query()
+                        ->distinct()
+                        ->pluck('host', 'host')
+                        ->toArray()
+                    ),
+
                 SelectFilter::make('assigned_user_id')
                     ->relationship('assignedUser', 'name')
                     ->label('Assigned User'),
-                
+
                 SelectFilter::make('status')
                     ->options([
                         'open' => 'Open',
@@ -108,6 +122,26 @@ class IncidentGroupsTable
             ->toolbarActions([
                 DeleteBulkAction::make(),
 
+                ActionGroup::make([
+                    Action::make('clearLow')
+                        ->label('Clear Low Severity')
+                        ->icon('heroicon-o-trash')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->modalDescription('This will permanently delete all low severity incidents.')
+                        ->action(fn () => IncidentGroup::where('highest_severity', 'low')->delete()),
+
+                    Action::make('clearMedium')
+                        ->label('Clear Medium Severity')
+                        ->icon('heroicon-o-trash')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->modalDescription('This will permanently delete all medium severity incidents.')
+                        ->action(fn () => IncidentGroup::where('highest_severity', 'low')->delete()),
+                ])
+                    ->label('Cleanup')
+                    ->icon('heroicon-o-trash'),
+
                 BulkAction::make('assignUser')
                     ->label('Assign to user')
                     ->form([
@@ -124,18 +158,16 @@ class IncidentGroupsTable
                         ]);
                     })
                     ->icon('heroicon-o-user'),
-                    
 
                 BulkAction::make('markResolved')
                     ->label('Mark as resolved')
                     ->requiresConfirmation()
                     ->color('success')
                     ->icon('heroicon-o-check')
-                    ->action(fn ($records) =>
-                        $records->toQuery()->update([
-                            'status' => 'resolved',
-                            'resolved_at' => now(),
-                        ])
+                    ->action(fn ($records) => $records->toQuery()->update([
+                        'status' => 'resolved',
+                        'resolved_at' => now(),
+                    ])
                     ),
 
                 BulkAction::make('closeIncident')
@@ -143,11 +175,10 @@ class IncidentGroupsTable
                     ->requiresConfirmation()
                     ->color('gray')
                     ->icon('heroicon-o-x-mark')
-                    ->action(fn ($records) =>
-                        $records->toQuery()->update([
-                            'status' => 'closed',
-                            'closed_at' => now(),
-                        ])
+                    ->action(fn ($records) => $records->toQuery()->update([
+                        'status' => 'closed',
+                        'closed_at' => now(),
+                    ])
                     ),
             ]);
     }
