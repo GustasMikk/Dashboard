@@ -6,13 +6,24 @@ composer install
 
 2. Copy example.env and name .env.
 
-3. Run:
+3. Setup your database:
+
+```
+DB_CONNECTION=sqlite
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+4. Run:
 
 ```
 php artisan key:generate
 ```
 
-4. Add Wazuh info in .env:
+5. Add Wazuh info in .env:
 
 ```
 WAZUH_BASE_URL=
@@ -21,7 +32,7 @@ WAZUH_PASSWORD=
 WAZUH_VERIFY_SSL=false
 ```
 
-5. Add AI API key/keys and email credentials or disable later on AI generation and email notifications in dashboard settings:
+6. Add AI API key/keys and email credentials or disable later on AI generation and email notifications in dashboard settings to avoid errors:
 
 ```
 MAIL_MAILER=log
@@ -47,7 +58,7 @@ VOYAGEAI_API_KEY=
 XAI_API_KEY=
 ```
 
-6. Migrate DB with seeders for user:
+7. Migrate DB with seeders for user:
 
 ```
 php artisan migrate --seed
@@ -59,9 +70,9 @@ Or create user manually:
 php artisan make:filament-user
 ```
 
-7. Login into dashboard go to settings tab and adjust settings. For more AI providers and models add them in ```app/Enums/AiProvider```.
+8. Login into dashboard go to settings tab and adjust settings. For more AI providers and models add them in ```app/Enums/AiProvider```.
 
-8. In Wazuh ossec.conf add:
+9. In Wazuh ossec.conf add:
 
 ```
 <ossec_config>
@@ -76,7 +87,7 @@ php artisan make:filament-user
 
 then restart Wazuh.
 
-9. To start storing incidents run:
+10. To start storing incidents run:
 
 ```
 php artisan queue:work

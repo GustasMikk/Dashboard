@@ -26,28 +26,25 @@ class AnalyzeIncidentGroupJob implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('Group analyze started');
+        Log::info('Group analyze started', ['group_id' => $this->group->id]);
 
         $this->group->refresh();
 
         if ($this->group->ai_scheduled_at > now()) {
+            Log::info('Skipping, newer job scheduled', ['group_id' => $this->group->id]);
             return;
         }
 
         $settings = app(NotificationSettings::class);
 
-        try {
-            $ai = app(AiService::class);
-            $result = $ai->analyzeGroup($this->group);
-            $this->group->update($result);
-            $this->group->refresh();
+        $ai = app(AiService::class);
+        $result = $ai->analyzeGroup($this->group);
+        $this->group->update($result);
+        $this->group->refresh();
 
-            if ($settings->email_enabled && in_array($this->group->highest_severity, $settings->email_severities)) {
-                Notification::route('mail', config('mail.admin_address'))
-                    ->notify(new IncidentGroupAnalyzedNotification($this->group));
-            }
-        } catch (\Exception $e) {
-            Log::error('Group AI analysis failed', ['group_id' => $this->group->id, 'error' => $e->getMessage()]);
+        if ($settings->email_enabled && in_array($this->group->highest_severity, $settings->email_severities)) {
+            Notification::route('mail', config('mail.admin_address'))
+                ->notify(new IncidentGroupAnalyzedNotification($this->group));
         }
     }
 }

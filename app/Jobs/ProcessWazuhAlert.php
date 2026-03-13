@@ -133,7 +133,7 @@ class ProcessWazuhAlert implements ShouldQueue
                         $incidentGroup = IncidentGroup::where('id', $incidentGroup->id)->lockForUpdate()->first();
                         $shouldSchedule = ! $incidentGroup->ai_scheduled_at || ($severityChanged && $incidentGroup->ai_scheduled_at < now());
 
-                        if ($settings->ai_enabled && $shouldSchedule && in_array($incidentGroup->highest_severity, $settings->ai_severities)) {
+                        if ($shouldSchedule && in_array($incidentGroup->highest_severity, $settings->ai_severities)) {
                             Log::info('Scheduled');
                             dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
                                 ->delay(now()->addMinutes((int) $settings->time_for_new_group));
