@@ -3,9 +3,10 @@
 namespace App\Jobs;
 
 use App\Models\IncidentGroup;
+use App\Models\User;
 use App\Notifications\IncidentGroupAnalyzedNotification;
 use App\Services\AiService;
-use App\Settings\NotificationSettings;
+use App\Settings\AppSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -36,16 +37,24 @@ class AnalyzeIncidentGroupJob implements ShouldQueue
             return;
         }
 
-        $settings = app(NotificationSettings::class);
+        $settings = app(AppSettings::class);
 
         $ai = app(AiService::class);
         $result = $ai->analyzeGroup($this->group);
+        Log::alert($result);
         $this->group->update($result);
         $this->group->refresh();
 
-        if ($settings->email_enabled && in_array($this->group->highest_severity, $settings->email_severities)) {
-            Notification::route('mail', config('mail.admin_address'))
-                ->notify(new IncidentGroupAnalyzedNotification($this->group));
+        $result = (object) $result;
+
+        try {
+            if ($settings->email_enabled && in_array($this->group->highest_severity, $settings->email_severities) && $result->send_email) {
+                User::where('emails_enabled', true)->each(function ($user) {
+                    $user->notify(new IncidentGroupAnalyzedNotification($this->group));
+                });
+            }
+        } catch (\Exception $e) {
+            Log::error('Email notification failed', ['group_id' => $this->group->id, 'error' => $e->getMessage()]);
         }
     }
 }

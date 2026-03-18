@@ -4,7 +4,7 @@ namespace App\Jobs;
 
 use App\Models\Incident;
 use App\Models\IncidentGroup;
-use App\Settings\NotificationSettings;
+use App\Settings\AppSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -37,7 +37,7 @@ class ProcessWazuhAlert implements ShouldQueue
         $mitre_tactic = data_get($this->payload, 'rule.mitre.tactic.0', 'Unknown');
         $title = "{$mitre_tactic} on {$host} at ".now()->format('Y-m-d H:i');
 
-        $settings = app(NotificationSettings::class);
+        $settings = app(AppSettings::class);
 
         $severity = match (true) {
             $level >= 12 => 'critical',
@@ -138,9 +138,6 @@ class ProcessWazuhAlert implements ShouldQueue
                             dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
                                 ->delay(now()->addMinutes((int) $settings->time_to_generate_ai_solution));
                             $incidentGroup->update(['ai_scheduled_at' => now()->addMinutes((int) $settings->time_to_generate_ai_solution)]);
-                        } else {
-                            // For pushing AI generation forward
-                            // $incidentGroup->update(['ai_scheduled_at' => now()->addMinutes((int) $settings->time_for_new_group)]);
                         }
                     });
                 }

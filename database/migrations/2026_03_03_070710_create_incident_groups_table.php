@@ -33,6 +33,7 @@ return new class extends Migration
             $table->text('ai_description')->nullable();
             $table->text('ai_recommendations')->nullable();
             $table->text('ai_root_cause')->nullable();
+            $table->boolean('send_email')->nullable();
             $table->timestamp('ai_scheduled_at')->nullable();
             $table->timestamps();
         });

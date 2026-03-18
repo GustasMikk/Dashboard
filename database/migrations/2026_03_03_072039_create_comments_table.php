@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('incident_group_id')
                 ->nullable()
                 ->constrained('incident_groups')
-                ->nullOnDelete();
+                ->cascadeOnDelete();
             $table->foreignId('user_id');
             $table->text('comment_text');
             $table->timestamps();

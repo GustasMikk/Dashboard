@@ -4,7 +4,7 @@ namespace App\Settings;
 
 use Spatie\LaravelSettings\Settings;
 
-class NotificationSettings extends Settings
+class AppSettings extends Settings
 {
     public bool $email_enabled;
 

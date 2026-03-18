@@ -3,8 +3,9 @@
 namespace App\Ai\Agents;
 
 use App\Models\IncidentGroup;
-use App\Settings\NotificationSettings;
+use App\Settings\AppSettings;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Promptable;
@@ -18,7 +19,7 @@ class GroupIncidentAnalyzer implements Agent, HasStructuredOutput
 
     public function instructions(): Stringable|string
     {
-        return app(NotificationSettings::class)->ai_instructions;
+        return app(AppSettings::class)->ai_instructions;
     }
 
     public function schema(JsonSchema $schema): array
@@ -27,18 +28,29 @@ class GroupIncidentAnalyzer implements Agent, HasStructuredOutput
             'ai_description' => $schema->string()->required(),
             'ai_root_cause' => $schema->string()->required(),
             'ai_recommendations' => $schema->string()->required(),
+            'send_email' => $schema->boolean()->required(),
         ];
     }
 
     public function buildPrompt(): string
     {
-        $incidents = $this->group->incidents->map(fn ($i) => implode("\n", [
-            "  Title: {$i->title}",
-            "  Rule: {$i->rule}",
-            "  Severity: {$i->severity}",
-            "  Occurrences: {$i->occurrences_count}",
-            '  Raw Data: '.$i->raw_payload,
-        ]))->join("\n\n---\n\n");
+        $incidents = $this->group->incidents->map(function ($i) {
+
+            // Take raw log from raw json
+            $data = json_decode($i->raw_payload, true);
+            $fullLog = $data['full_log'] ?? 'No log available';
+
+            return implode("\n", [
+                "  Title: {$i->title}",
+                "  Rule: {$i->rule}",
+                "  Severity: {$i->severity}",
+                "  Occurrences: {$i->occurrences_count}",
+                "  Raw Log: {$fullLog}",
+            ]);
+
+        })->join("\n\n---\n\n");
+
+        Log::info($incidents);
 
         return <<<PROMPT
         Analyze this group of related security incidents:

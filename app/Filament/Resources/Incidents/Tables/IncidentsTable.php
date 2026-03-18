@@ -126,8 +126,6 @@ class IncidentsTable
                 EditAction::make(),
             ])
             ->toolbarActions([
-                DeleteBulkAction::make(),
-
                 ActionGroup::make([
                     Action::make('clearLow')
                         ->label('Clear Low Severity')
@@ -144,9 +142,12 @@ class IncidentsTable
                         ->requiresConfirmation()
                         ->modalDescription('This will permanently delete all medium severity incidents.')
                         ->action(fn () => Incident::where('severity', 'medium')->delete()),
+                    
                 ])
-                    ->label('Cleanup')
-                    ->icon('heroicon-o-trash'),
+                ->label('Cleanup')
+                ->icon('heroicon-o-trash'),
+
+                DeleteBulkAction::make(),
             ])
             ->defaultSort('first_occurrence_at', 'desc');
     }

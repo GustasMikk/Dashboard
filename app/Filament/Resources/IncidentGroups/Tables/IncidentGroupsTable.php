@@ -120,8 +120,6 @@ class IncidentGroupsTable
             ])
             ->defaultSort('opened_at', 'desc')
             ->toolbarActions([
-                DeleteBulkAction::make(),
-
                 ActionGroup::make([
                     Action::make('clearLow')
                         ->label('Clear Low Severity')
@@ -141,6 +139,8 @@ class IncidentGroupsTable
                 ])
                     ->label('Cleanup')
                     ->icon('heroicon-o-trash'),
+
+                DeleteBulkAction::make(),
 
                 BulkAction::make('assignUser')
                     ->label('Assign to user')

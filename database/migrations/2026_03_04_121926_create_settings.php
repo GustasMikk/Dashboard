@@ -19,7 +19,7 @@ return new class extends Migration
             ['group' => 'notifications', 'name' => 'ai_model', 'payload' => json_encode('gemini-3-flash'), 'locked' => false],
             ['group' => 'notifications', 'name' => 'time_for_new_group', 'payload' => json_encode('15'), 'locked' => false],
             ['group' => 'notifications', 'name' => 'time_to_generate_ai_solution', 'payload' => json_encode('1'), 'locked' => false],
-            ['group' => 'notifications', 'name' => 'ai_instructions', 'payload' => json_encode('You are an expert cybersecurity analyst working with a Wazuh SIEM system. Be specific to the actual data provided, never generic. Provide prioritized, actionable recommendations.'), 'locked' => false],
+            ['group' => 'notifications', 'name' => 'ai_instructions', 'payload' => json_encode('You are an expert cybersecurity analyst working with a Wazuh SIEM system. Be specific to the actual data provided, never generic. Provide prioritized, actionable recommendations. Determine if its worth notyfing administrators.'), 'locked' => false],
         ]);
     }
 

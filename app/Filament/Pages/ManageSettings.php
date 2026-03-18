@@ -3,7 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Enums\AiProvider;
-use App\Settings\NotificationSettings;
+use App\Settings\AppSettings;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -13,7 +13,7 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
-class ManageNotifications extends SettingsPage
+class ManageSettings extends SettingsPage
 {
     public static function getNavigationIcon(): string
     {
@@ -32,7 +32,7 @@ class ManageNotifications extends SettingsPage
         return 3;
     }
 
-    protected static string $settings = NotificationSettings::class;
+    protected static string $settings = AppSettings::class;
 
     public function form(Schema $schema): Schema
     {

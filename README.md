@@ -44,8 +44,6 @@ MAIL_PASSWORD=null
 MAIL_FROM_ADDRESS="hello@example.com"
 MAIL_FROM_NAME="${APP_NAME}"
 
-ADMIN_EMAIL=admin@yourdomain.com
-
 ANTHROPIC_API_KEY=
 COHERE_API_KEY=
 ELEVENLABS_API_KEY=
@@ -58,13 +56,25 @@ VOYAGEAI_API_KEY=
 XAI_API_KEY=
 ```
 
-7. Migrate DB with seeders for user:
+7. Migrate DB with seeders for testing:
 
 ```
 php artisan migrate --seed
 ```
 
-Or create user manually:
+Logins:
+
+```
+admin@admin.com
+admin
+
+and
+
+admin2@admin.com
+admin2
+```
+
+Create user for using normally:
 
 ```
 php artisan make:filament-user
@@ -113,6 +123,15 @@ user=your-user
 numprocs=1
 redirect_stderr=true
 stdout_logfile=/path/to/your/project/storage/logs/worker.log
+
+[program:laravel-scheduler]
+process_name=%(program_name)s
+command=/bin/bash -c "while true; do php /path/to/your/project/artisan schedule:run; sleep 60; done"
+autostart=true
+autorestart=true
+user=your-user
+redirect_stderr=true
+stdout_logfile=/path/to/your/project/storage/logs/scheduler.log
 ```
 
 and run:
@@ -121,4 +140,11 @@ and run:
 sudo supervisorctl reread
 sudo supervisorctl update
 sudo supervisorctl start laravel-worker:*
+sudo supervisorctl start laravel-scheduler
+```
+
+11. For tests run:
+
+```
+php artisan test
 ```
