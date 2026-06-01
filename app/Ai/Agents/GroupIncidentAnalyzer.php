@@ -5,7 +5,6 @@ namespace App\Ai\Agents;
 use App\Models\IncidentGroup;
 use App\Settings\AppSettings;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Support\Facades\Log;
 use Laravel\Ai\Contracts\Agent;
 use Laravel\Ai\Contracts\HasStructuredOutput;
 use Laravel\Ai\Promptable;
@@ -36,7 +35,6 @@ class GroupIncidentAnalyzer implements Agent, HasStructuredOutput
     {
         $incidents = $this->group->incidents->map(function ($i) {
 
-            // Take raw log from raw json
             $data = json_decode($i->raw_payload, true);
             $fullLog = $data['full_log'] ?? 'No log available';
 
@@ -49,8 +47,6 @@ class GroupIncidentAnalyzer implements Agent, HasStructuredOutput
             ]);
 
         })->join("\n\n---\n\n");
-
-        Log::info($incidents);
 
         return <<<PROMPT
         Analyze this group of related security incidents:

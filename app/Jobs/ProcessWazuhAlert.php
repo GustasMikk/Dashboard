@@ -25,8 +25,6 @@ class ProcessWazuhAlert implements ShouldQueue
 
     public function handle(): void
     {
-        Log::info('Job started');
-
         $rule = $this->payload['rule'] ?? [];
         $agent = $this->payload['agent'] ?? [];
         $mitre_id = data_get($this->payload, 'rule.mitre.id.0');
@@ -136,6 +134,7 @@ class ProcessWazuhAlert implements ShouldQueue
                         if ($shouldSchedule && in_array($incidentGroup->highest_severity, $settings->ai_severities)) {
                             Log::info('Scheduled');
                             dispatch(new AnalyzeIncidentGroupJob($incidentGroup))
+                                ->onQueue('ai')
                                 ->delay(now()->addMinutes((int) $settings->time_to_generate_ai_solution));
                             $incidentGroup->update(['ai_scheduled_at' => now()->addMinutes((int) $settings->time_to_generate_ai_solution)]);
                         }

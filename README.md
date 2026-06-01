@@ -114,15 +114,23 @@ sudo nano /etc/supervisor/conf.d/laravel-worker.conf
 add this to the config
 
 ```
-[program:laravel-worker]
-process_name=%(program_name)s_%(process_num)02d
-command=php /path/to/your/project/artisan queue:work --sleep=3 --tries=3
+[program:redis]
+command=redis-server
+autostart=true
+autorestart=true
+user=root
+redirect_stderr=true
+stdout_logfile=/var/log/redis/supervisor.log
+
+[program:laravel-horizon]
+process_name=%(program_name)s
+command=php /path/to/your/project/artisan horizon
 autostart=true
 autorestart=true
 user=your-user
-numprocs=1
 redirect_stderr=true
-stdout_logfile=/path/to/your/project/storage/logs/worker.log
+stdout_logfile=/path/to/your/project/storage/logs/horizon.log
+stopwaitsecs=3600
 
 [program:laravel-scheduler]
 process_name=%(program_name)s
@@ -139,11 +147,17 @@ and run:
 ```
 sudo supervisorctl reread
 sudo supervisorctl update
-sudo supervisorctl start laravel-worker:*
-sudo supervisorctl start laravel-scheduler
+sudo supervisorctl start all
 ```
 
-11. For tests run:
+11. To launch app:
+
+```
+php artisan serve
+```
+
+
+12. For tests run:
 
 ```
 php artisan test

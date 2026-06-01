@@ -12,7 +12,7 @@ class WazuhWebhookController extends Controller
     {
         $payload = $request->all();
 
-        ProcessWazuhAlert::dispatch($payload);
+        ProcessWazuhAlert::dispatch($payload)->onQueue('wazuh');
 
         return response()->json(['status' => 'queued'], 200);
     }

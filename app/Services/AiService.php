@@ -5,13 +5,11 @@ namespace App\Services;
 use App\Ai\Agents\GroupIncidentAnalyzer;
 use App\Models\IncidentGroup;
 use App\Settings\AppSettings;
-use Illuminate\Support\Facades\Log;
 
 class AiService
 {
     public function analyzeGroup(IncidentGroup $group): array
     {
-        Log::info('Analyzing incident group', ['group_id' => $group->id]);
         $settings = app(AppSettings::class);
         $agent = new GroupIncidentAnalyzer($group);
         $model = $settings->ai_model !== 'auto' ? $settings->ai_model : null;

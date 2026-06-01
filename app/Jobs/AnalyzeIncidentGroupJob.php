@@ -13,7 +13,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Notification;
 
 class AnalyzeIncidentGroupJob implements ShouldQueue
 {
@@ -41,7 +40,6 @@ class AnalyzeIncidentGroupJob implements ShouldQueue
 
         $ai = app(AiService::class);
         $result = $ai->analyzeGroup($this->group);
-        Log::alert($result);
         $this->group->update($result);
         $this->group->refresh();
 

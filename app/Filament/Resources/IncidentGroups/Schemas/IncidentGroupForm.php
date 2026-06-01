@@ -14,6 +14,8 @@ class IncidentGroupForm
     {
         return $schema
             ->components([
+                TextInput::make('id')
+                    ->required(),
                 TextInput::make('title')
                     ->required(),
                 TextInput::make('mitre_id')
@@ -22,6 +24,8 @@ class IncidentGroupForm
                     ->required()
                     ->numeric()
                     ->default(1),
+                TextInput::make('host')
+                    ->required(),
                 DateTimePicker::make('last_occurrence_at')
                     ->required(),
                 TextInput::make('highest_severity')
